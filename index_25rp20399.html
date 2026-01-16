@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heart Disease Risk Predictor System</title>
+    <style>
+        :root {
+            --primary-dark: #1e3a8a;
+            --primary-light: #3b82f6;
+            --accent-blue: #2563eb;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --color-immediately-dangerous: #dc2626;
+            --color-high-risk: #f97316;
+            --color-moderate-risk: #facc15;
+            --color-no-disease: #3b82f6;
+            --color-healthy: #10b981;
+            --color-normal: #059669;
+            --color-default: #64748b;
+            --border-color: #e2e8f0;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body { 
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; 
+            background: linear-gradient(135deg, #1a2332 0%, #0f1419 100%);
+            padding: 40px 20px;
+            display: flex; 
+            justify-content: center; 
+            align-items: flex-start; 
+            min-height: 100vh;
+            color: var(--text-primary);
+        }
+
+        .container {
+            background: var(--card-bg);
+            padding: 0;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(30, 58, 138, 0.1);
+            max-width: 800px; 
+            width: 100%;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--accent-blue) 100%);
+            padding: 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: pulse 15s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+
+        h1 { 
+            color: #ffffff;
+            font-size: 1.6rem; 
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            position: relative;
+            z-index: 1;
+            margin-bottom: 0;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .section-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 16px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 3px;
+            height: 20px;
+            background: var(--accent-blue);
+            border-radius: 2px;
+        }
+
+        .form-grid {
+            display: grid; 
+            grid-template-columns: repeat(2, 1fr); 
+            gap: 16px 20px;
+            margin-bottom: 20px;
+        }
+
+        .input-group { 
+            display: flex; 
+            flex-direction: column;
+        }
+        
+        label { 
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 6px; 
+            font-weight: 600;
+        }
+
+        input, select { 
+            padding: 10px 14px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px; 
+            font-size: 14px;
+            background-color: #ffffff;
+            transition: all 0.3s ease;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        input:hover, select:hover {
+            border-color: var(--primary-light);
+        }
+
+        input:focus, select:focus { 
+            border-color: var(--accent-blue);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        button { 
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--accent-blue) 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px; 
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+        }
+
+        button:active { 
+            transform: translateY(0);
+        }
+
+        #result { 
+            margin-top: 30px;
+            padding: 30px;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border-radius: 16px;
+            border: 2px solid var(--border-color);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        .diagnosis-text { 
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: -0.01em;
+            margin-bottom: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .prob-item { 
+            margin-top: 16px;
+            background: white;
+            padding: 16px;
+            border-radius: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .prob-header { 
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            align-items: center;
+        }
+
+        .prob-label {
+            font-weight: 700;
+            letter-spacing: 0.02em;
+        }
+
+        .prob-value {
+            font-weight: 800;
+            font-size: 1rem;
+        }
+
+        .bar-container { 
+            background: #f1f5f9;
+            height: 14px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .bar-fill { 
+            height: 100%;
+            width: 0%;
+            transition: width 1.5s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        .info-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            background: #eff6ff;
+            color: var(--accent-blue);
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 0;
+                border-radius: 0;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            .header {
+                padding: 24px;
+            }
+
+            h1 {
+                font-size: 1.3rem;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>HEART DISEASE RISK PREDICTOR SYSTEM</h1>
+    </div>
+
+    <div class="content">
+        <form id="form">
+            <div class="section-title">Patient Information</div>
+            <div class="form-grid">
+                <div class="input-group">
+                    <label>Age (years)</label>
+                    <input name="age" type="number" required placeholder="e.g., 45">
+                </div>
+                <div class="input-group">
+                    <label>Sex</label>
+                    <select name="sex" required>
+                        <option value="">Select...</option>
+                        <option value="1">Male</option>
+                        <option value="0">Female</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="section-title">Clinical Measurements</div>
+            <div class="form-grid">
+                <div class="input-group">
+                    <label>Chest Pain Type</label>
+                    <select name="cp" required>
+                        <option value="">Select...</option>
+                        <option value="0">Typical Angina</option>
+                        <option value="1">Atypical Angina</option>
+                        <option value="2">Non-anginal Pain</option>
+                        <option value="3">Asymptomatic</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Resting Blood Pressure (mm Hg)</label>
+                    <input name="trestbps" type="number" required placeholder="e.g., 120">
+                </div>
+                <div class="input-group">
+                    <label>Serum Cholesterol (mg/dl)</label>
+                    <input name="chol" type="number" required placeholder="e.g., 200">
+                </div>
+                <div class="input-group">
+                    <label>Fasting Blood Sugar > 120 mg/dl</label>
+                    <select name="fbs" required>
+                        <option value="">Select...</option>
+                        <option value="0">False</option>
+                        <option value="1">True</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Resting ECG Results</label>
+                    <select name="restecg" required>
+                        <option value="">Select...</option>
+                        <option value="0">Normal</option>
+                        <option value="1">ST-T Wave Abnormality</option>
+                        <option value="2">Left Ventricular Hypertrophy</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Maximum Heart Rate Achieved</label>
+                    <input name="thalach" type="number" required placeholder="e.g., 150">
+                </div>
+                <div class="input-group">
+                    <label>Exercise Induced Angina</label>
+                    <select name="exang" required>
+                        <option value="">Select...</option>
+                        <option value="0">No</option>
+                        <option value="1">Yes</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>ST Depression (Oldpeak)</label>
+                    <input name="oldpeak" type="number" step="0.1" required placeholder="e.g., 1.0">
+                </div>
+                <div class="input-group">
+                    <label>ST Segment Slope</label>
+                    <select name="slope" required>
+                        <option value="">Select...</option>
+                        <option value="0">Upsloping</option>
+                        <option value="1">Flat</option>
+                        <option value="2">Downsloping</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Major Vessels Colored (0-3)</label>
+                    <input name="ca" type="number" min="0" max="3" required placeholder="0-3">
+                </div>
+                <div class="input-group">
+                    <label>Thalassemia Status</label>
+                    <select name="thal" required>
+                        <option value="">Select...</option>
+                        <option value="1">Normal</option>
+                        <option value="2">Fixed Defect</option>
+                        <option value="3">Reversible Defect</option>
+                    </select>
+                </div>
+            </div>
+
+            <button type="submit">Analyze Patient Risk</button>
+        </form>
+
+        <div id="result" style="display: none;"></div>
+    </div>
+</div>
+
+<script>
+document.getElementById("form").onsubmit = async function(e){
+    e.preventDefault();
+    const resultDiv = document.getElementById("result");
+    resultDiv.style.display = "block";
+    resultDiv.innerHTML = `
+        <div style="text-align: center; color: var(--accent-blue); font-weight: 600;">
+            <div style="font-size: 1.2rem; margin-bottom: 10px;">Processing Clinical Data...</div>
+            <div style="font-size: 0.9rem; color: var(--text-secondary);">Analyzing patient parameters</div>
+        </div>
+    `;
+
+    const colorMap = {
+        "immediate danger": "var(--color-immediately-dangerous)",
+        "mild": "var(--color-high-risk)",
+        "no disease": "var(--color-no-disease)",
+        "severe": "var(--color-moderate-risk)",
+        "very mild": "var(--color-healthy)"
+    };
+
+    try {
+        const formData = new FormData(this);
+        const data = Object.fromEntries(formData.entries());
+        Object.keys(data).forEach(k => data[k] = parseFloat(data[k]));
+
+        const res = await fetch("/api/predict", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify(data)
+        });
+        
+        const output = await res.json();
+        
+        if (res.ok) {
+            const mainColor = colorMap[output.predicted_class.toLowerCase()] || "var(--color-default)";
+            
+            let probHtml = "";
+            for (const [className, value] of Object.entries(output.probabilities)) {
+                const pct = (value * 100).toFixed(1);
+                const barColor = colorMap[className.toLowerCase()] || "var(--color-default)";
+                
+                probHtml += `
+                    <div class="prob-item">
+                        <div class="prob-header" style="color: ${barColor};">
+                            <span class="prob-label">${className.toUpperCase()}</span>
+                            <span class="prob-value">${pct}%</span>
+                        </div>
+                        <div class="bar-container">
+                            <div class="bar-fill" style="width: ${pct}%; background-color: ${barColor}"></div>
+                        </div>
+                    </div>`;
+            }
+
+            setTimeout(() => {
+                resultDiv.innerHTML = `
+                    <div class="diagnosis-text" style="color: ${mainColor};">
+                        DIAGNOSIS: ${output.predicted_class.toUpperCase()}
+                    </div>
+                    <div style="margin-top: 20px;">
+                        ${probHtml}
+                    </div>
+                    <div class="info-badge">
+                        Risk Assessment Complete
+                    </div>
+                `;
+            }, 800);
+        }
+    } catch (err) {
+        resultDiv.innerHTML = `
+            <div style="text-align: center; color: var(--color-immediately-dangerous);">
+                <div style="font-size: 1.5rem; margin-bottom: 10px;">!</div>
+                <div style="font-weight: 700; margin-bottom: 8px;">Connection Error</div>
+                <div style="font-size: 0.9rem; color: var(--text-secondary);">
+                    Unable to connect to the analysis server. Please check your connection and try again.
+                </div>
+            </div>
+        `;
+    }
+};
+</script>
+
+</body>
+</html>
